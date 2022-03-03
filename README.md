@@ -24,5 +24,12 @@ Copy the executable "apply_decision_tree" to somewhere on your path like "~/bin"
 
 --------------------------------
 
+# Example:
+
+Using the provided files, use the command:
+
+```
+./apply_decision_tree J48Tree_test.txt test.arff
+```
 
 
