@@ -98,6 +98,7 @@ void asses_genomes(struct node *position, int genome);
 
  	/* STEP 3: assess all the genome information based on the decision tree */
  	printf("RESULTS:\n");
+ 	
  	for(i=0; i<num_genomes; i++)
  		{
  		asses_genomes(node_array[0], i);
