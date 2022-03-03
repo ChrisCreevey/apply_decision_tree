@@ -441,7 +441,7 @@ void asses_genomes(struct node *position, int genome)
 
 	if(position->left == NULL && position->right == NULL)
 		{	
-		printf("Genome %d = %s\n", genome, position->label);
+		printf("Genome %d = Node:%d Label:%s\n", genome, position->name, position->label);
 		}
 
 	}
