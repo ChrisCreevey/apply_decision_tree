@@ -60,6 +60,7 @@ int numfields=0, nodecount=0, edgecount=0, num_genomes=0;
 
 
 
+
 /**** function definitions ***/
 
 void print_tree_details(struct node *position);
@@ -68,13 +69,15 @@ void read_arff (FILE * arff_file);
 int is_genefam_in_tree(struct node *position, char *famname);
 void asses_genomes(struct node *position, int genome);
 void print_tree_traversal_counts(struct node *position);
+void print_newick_treefile(struct node *position, FILE *newickfile);
+
 
 
 
 	
  int main(int argc, char const *argv[]){
 
-	 FILE *treefile, *arff_file = NULL;
+	 FILE *treefile = NULL, *arff_file = NULL, *newickfile = NULL;
 	 int i;
 	 char command[1000] = "grep \"^N[0-9]\" ";
 	 strcat(command, argv[1]);
@@ -95,10 +98,6 @@ void print_tree_traversal_counts(struct node *position);
 	read_arff (arff_file); /* read the arff_file and build the decisiontree in memory */
  	fclose(arff_file);
 
-	/* test that the tree and data was read in correctly */
- /*	printf("Starting Tree traversal\n"); */
- /*	print_tree_details(node_array[0]); *//* node 0 is always the top if the tree */
- /*	printf("Done tree traversal\n"); */
 
  	/* STEP 3: assess all the genome information based on the decision tree */
  	printf("RESULTS:\n");
@@ -111,6 +110,22 @@ void print_tree_traversal_counts(struct node *position);
  	/* STEP 4: print out node traversal counts across the tree for from the genome assessments */
  	printf("\nDecision Tree traversal counts:\n");
  	print_tree_traversal_counts(node_array[0]);
+
+ 	/* STEP 5: print Newick formatted output of decision tree with traversal stats included */
+ 	printf("\nCreating Newick formatted version of decision tree\n");
+ 	newickfile = fopen("newick_output.txt", "w");
+ 	fprintf(newickfile, "(");
+ 	print_newick_treefile(node_array[0], newickfile);
+ 	fprintf(newickfile, ");\n");
+ 	fclose(newickfile);
+ 	printf("\tNewick tree written to file newick_output.txt\n");
+
+ 		/* test that the tree and data was read in correctly */
+/* 	printf("Starting Tree traversal\n"); */
+ /*	print_tree_details(node_array[0]); */ /* node 0 is always the top if the tree */
+ /*	printf("Done tree traversal\n");  */
+
+
 
  	return 0;
 	}
@@ -433,13 +448,59 @@ void asses_genomes(struct node *position, int genome)
 
 void print_tree_traversal_counts(struct node *position)
 	{	
-	while(position != NULL)
-		{
 		printf("Node number %d\tLabel:%s\tVisit Count:%d\n", position->name, position->label, position->traversal_count);
 		if(position->left != NULL) print_tree_traversal_counts(position->left);
 		if(position->right != NULL) print_tree_traversal_counts(position->right);
-		position=NULL;
-		}
 	}
 
+
+
+void print_newick_treefile(struct node *position, FILE *newickfile)
+	{
+	char *newlabel;
+	int i;
+	
+	newlabel=malloc(DESCRIPTION_LENGTH*sizeof(char));
+	newlabel[0]='\0';
+
+
+	/* get rid of parentheses in labels as they will conflict with the newick format */
+	for(i=0; i<DESCRIPTION_LENGTH; i++){
+		switch(position->label[i]){
+			case '(':
+				newlabel[i]='{';
+				break;
+			case ')':
+				newlabel[i]='}';
+				break;
+			case '\0':
+				newlabel[i]='\0';
+				i=DESCRIPTION_LENGTH;
+				break;
+			default:
+				newlabel[i]=position->label[i];
+				break;
+			}
+
+		}
+	if(position->left != NULL)
+		{
+		fprintf(newickfile, "(");
+	 	print_newick_treefile(position->left, newickfile);
+	 	fprintf(newickfile, ",");
+		}
+
+	if(position->right != NULL) 
+		{
+		print_newick_treefile(position->right, newickfile);
+		fprintf(newickfile, ")N%d-%s-%d", position->name, newlabel, position->traversal_count);
+		}
+	if(position->left == NULL && position->right == NULL)
+		{	
+		fprintf(newickfile, "N%d-%s-%d", position->name, newlabel, position->traversal_count);
+		}
+
+	free(newlabel);
+
+	}
 
