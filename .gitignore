@@ -1,0 +1,14 @@
+test_tree.txt
+test_tree_input.txt
+transform_j48treefile.sh
+Gene_family_profile.txt
+Tetracycline_eggnog.arff
+azithromycin_eggnog.arff
+chloramphenicol_eggnog.arff
+azithromycin_eggnog_subsample.arff
+a.data.txt
+output.txt
+q.txt
+azithromycin_eggnog.arff.results
+formatted_tree_file_orig.txt
+
