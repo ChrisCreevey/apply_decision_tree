@@ -12,3 +12,4 @@ tmp/test_tree_input.txt
 tmp/Tetracycline_eggnog.arff
 tmp/transform_j48treefile.sh
 tmp/
+apply_decision_tree

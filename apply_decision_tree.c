@@ -125,7 +125,13 @@ void print_newick_treefile(struct node *position, FILE *newickfile);
  /*	print_tree_details(node_array[0]); */ /* node 0 is always the top if the tree */
  /*	printf("Done tree traversal\n");  */
 
-
+ 	/* Clean up allocated memory before quitting */
+ 	for(i=0; i<nodecount; i++)
+ 		{
+ 		free(node_array[i]->freqs);
+ 		free(node_array[i]);
+ 		}
+ 	free(node_array);
 
  	return 0;
 	}
@@ -348,6 +354,7 @@ void read_arff (FILE * arff_file)
  			printf("\tnumber of genomes = %d\n", num_genomes);
  			}	
 	 	}	
+	 free(fam_name);
 	}
 
 /* Search tree to see if a specified gene family is contained in it */
