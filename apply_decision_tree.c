@@ -44,6 +44,8 @@ struct node {
 	char left_condition[DESCRIPTION_LENGTH]; 		/* this holds the text version of the condition ">","<", ">=", etc... */
 	char right_condition[DESCRIPTION_LENGTH]; 		/* this holds the text version of the condition ">","<", ">=", etc... */
 
+	int traversal_count; /* counter to record how many times we visited each noe fo the tree during assessment of genomes */
+
 	int arff_line_num;	/* holds the line number that the information */
 	float *freqs;		/* hold the frequencies of this gene familily across all the genomes in the arff file */
 
@@ -65,6 +67,8 @@ void read_tree (FILE * treefile);
 void read_arff (FILE * arff_file); 
 int is_genefam_in_tree(struct node *position, char *famname);
 void asses_genomes(struct node *position, int genome);
+void print_tree_traversal_counts(struct node *position);
+
 
 
 	
@@ -98,11 +102,15 @@ void asses_genomes(struct node *position, int genome);
 
  	/* STEP 3: assess all the genome information based on the decision tree */
  	printf("RESULTS:\n");
- 	
+
  	for(i=0; i<num_genomes; i++)
  		{
  		asses_genomes(node_array[0], i);
  		}
+
+ 	/* STEP 4: print out node traversal counts across the tree for from the genome assessments */
+ 	printf("\nDecision Tree traversal counts:\n");
+ 	print_tree_traversal_counts(node_array[0]);
 
  	return 0;
 	}
@@ -170,6 +178,7 @@ void read_tree (FILE * treefile)
   		node_array[i]->right_value=0;
  		node_array[i]->left_condition[0]='\0';
  		node_array[i]->right_condition[0]='\0';
+ 		node_array[i]->traversal_count = 0;
  
  		node_array[i]->arff_line_num=-1;
  		node_array[i]->freqs=malloc(DESCRIPTION_LENGTH*sizeof(float));
@@ -345,6 +354,7 @@ int is_genefam_in_tree(struct node *position, char *famname)
 void asses_genomes(struct node *position, int genome)
 	{
 
+	position->traversal_count++; /* increment this counter in this node to reflect taht we visited here in the assessment */
 
 	/* Check Left codition */
 	if(position->left != NULL){
@@ -421,5 +431,15 @@ void asses_genomes(struct node *position, int genome)
 
 	}
 
+void print_tree_traversal_counts(struct node *position)
+	{	
+	while(position != NULL)
+		{
+		printf("Node number %d\tLabel:%s\tVisit Count:%d\n", position->name, position->label, position->traversal_count);
+		if(position->left != NULL) print_tree_traversal_counts(position->left);
+		if(position->right != NULL) print_tree_traversal_counts(position->right);
+		position=NULL;
+		}
+	}
 
 
