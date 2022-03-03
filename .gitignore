@@ -1,14 +1,14 @@
-test_tree.txt
-test_tree_input.txt
-transform_j48treefile.sh
-Gene_family_profile.txt
-Tetracycline_eggnog.arff
-azithromycin_eggnog.arff
-chloramphenicol_eggnog.arff
-azithromycin_eggnog_subsample.arff
-a.data.txt
-output.txt
-q.txt
-azithromycin_eggnog.arff.results
-formatted_tree_file_orig.txt
 
+tmp/a.data.txt
+tmp/azithromycin_eggnog.arff
+tmp/azithromycin_eggnog.arff.results
+tmp/chloramphenicol_eggnog.arff
+tmp/formatted_tree_file_orig.txt
+tmp/Gene_family_profile.txt
+tmp/output.txt
+tmp/q.txt
+tmp/test_tree.txt
+tmp/test_tree_input.txt
+tmp/Tetracycline_eggnog.arff
+tmp/transform_j48treefile.sh
+tmp/
