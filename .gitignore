@@ -13,3 +13,5 @@ tmp/Tetracycline_eggnog.arff
 tmp/transform_j48treefile.sh
 tmp/
 apply_decision_tree
+eggnog.edited.arff
+eggnog.edited.arff.result

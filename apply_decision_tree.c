@@ -36,7 +36,7 @@
 struct node {
 	
 	int name;					/* This holds the node number */
-	char label[DESCRIPTION_LENGTH];				/* This holds the node label (genefamily name or result) */
+	char *label;				/* This holds the node label (genefamily name or result) */
 
 	float left_value; 				/* this holds the cutoff value to decide true/false */
 	float right_value; 				/* this holds the cutoff value to decide true/false */
@@ -79,7 +79,7 @@ void print_newick_treefile(struct node *position, FILE *newickfile);
 
 	 FILE *treefile = NULL, *arff_file = NULL, *newickfile = NULL;
 	 int i;
-	 char command[1000] = "grep \"^N[0-9]\" ";
+	 char command[10000] = "grep \"^N[0-9]\" ";
 	 strcat(command, argv[1]);
 	 strcat(command, " | sed 's/\\[label=\"//g' | sed 's/\" *\\]//g'| sed 's/\\\".*\\]$//g' | sed \"s/\\(N[0-9]*\\) /\\1	/g\" | sed '/->/s/^/EDGE	/g' | sed '/^N[0-9]/s/^/NODE	/g' | awk '{print $1\"\t\"$2\"\t\"$3\"\t\"$4\"#\"}' > formatted_tree_file.txt");
  	/* code */
@@ -129,6 +129,7 @@ void print_newick_treefile(struct node *position, FILE *newickfile);
  	for(i=0; i<nodecount; i++)
  		{
  		free(node_array[i]->freqs);
+ 		free(node_array[i]->label);
  		free(node_array[i]);
  		}
  	free(node_array);
@@ -179,21 +180,20 @@ void read_tree (FILE * treefile)
 
 	/* read the decision tree data to capture the information on the nodes */
 	/* count the numbver of nodes */
-
 	while(!feof(treefile)){	
  		fscanf(treefile, "%s\t%s\t%s\t%s\n", type, nodename, comparison, nodelabel);
- 		/*printf("Type = %s, Nodename = %s, Nodelabel = %s" "%s\n", type, nodename, comparison, nodelabel); */
+ 		printf("Type = %s, Nodename = %s, Nodelabel = %s" "%s\n", type, nodename, comparison, nodelabel); 
  		if(strcmp(type, "NODE")==0) nodecount++;
  		if(strcmp(type, "EDGE")==0) edgecount++;
  		}
  	printf("\t%d nodes and %d edges found in decision tree\n", nodecount, edgecount);
-
 
  	/* assign array of structures for storing the decision tree information */
  	node_array=malloc(nodecount*sizeof(node_type));
  	for(i=0; i<nodecount; i++){ /* define the nodes of the tree */
  		node_array[i]=malloc(sizeof(node_type));
  		node_array[i]->name=i;
+ 		node_array[i]->label=malloc(DESCRIPTION_LENGTH*sizeof(char));
  		node_array[i]->label[0]='\0';
  		node_array[i]->left_value=0;
   		node_array[i]->right_value=0;
@@ -330,8 +330,7 @@ void read_arff (FILE * arff_file)
 		 		if(strcmp(tmptext2, "@DATA")==0){ /* start reading the data */
 		 			linenum=0;
 		 			
-		 			genome_freq = malloc(numfields+1*sizeof(float)); /* this will hold the tokenised text for each data line */
-
+		 			genome_freq = malloc((numfields+1)*sizeof(float)); /* this will hold the tokenised text for each data line */
 		 			while(!feof(arff_file)){
 
 		 				/* for each line of data, read in the numbers, tokenise them and then pass the array to add the data to the tree */
