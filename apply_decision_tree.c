@@ -287,73 +287,85 @@ void read_arff (FILE * arff_file)
 	tmptext2[0]='\0';
 
 	fgets(tmptext2, DESCRIPTION_LENGTH, arff_file);
-	token=strtok(tmptext2, delims); /* get first token (everything up to the first space) */
-	/*printf("token=%s\n", token);*/
- 	if(strcmp(token, "@RELATION")!=0){
- 		printf("\tERROR: File not in ARFF format\n");	
-	 
-	}else{
- 		/* Read in the attribute section */
- 		fgets(tmptext2, DESCRIPTION_LENGTH, arff_file);
- 	/*	printf("line=%s\n", tmptext2); */
- 		token=strtok(tmptext2, delims); /* get first token (everything up to the first space) */
- 		strcpy(tmptext, token);
- 		token= strtok(NULL, delims); /* Get next token (gene family name) */
- 		if(token!=NULL) strcpy(fam_name, token);
- 	/*	printf("tmptext=%s fam_name=%s\n",tmptext, fam_name); */
+	while(tmptext2[0] == '%' && !feof(arff_file)) fgets(tmptext2, DESCRIPTION_LENGTH, arff_file); /* Skip comment lines */
+	if(!feof(arff_file)){
 
- 		while(strcmp(tmptext, "@ATTRIBUTE") == 0 && !feof(arff_file)){
- 			foundnode=is_genefam_in_tree(node_array[0], fam_name);  /* for each genefamily in the arff file, search the decision tree to see if it is there */
- 			linenum++;
- 			if(foundnode != -1){
- 				node_array[foundnode]->arff_line_num=linenum-1; /* If the gene family is in the decision tree, then foundnode will be equal to the node number that contains the genefamily */
- 			/*	printf("found attribute %s at node %d in decision tree! - linenum=%d\n", fam_name, foundnode, linenum-1); */
- 				}
-			if(!feof(arff_file))fgets(tmptext2, DESCRIPTION_LENGTH, arff_file);
-	 		token=strtok(tmptext2, delims); /* get first token (everything up to the first space) */
-	 		if(token!=NULL) strcpy(tmptext, token);
+		token=strtok(tmptext2, delims); /* get first token (everything up to the first space) */
+		/*printf("token=%s\n", token);*/
+	 	if(strcmp(token, "@RELATION")!=0){
+	 		printf("\tERROR: File not in ARFF format\n");	
+		 
+		}else{
+	 		/* Read in the attribute section */
+	 		fgets(tmptext2, DESCRIPTION_LENGTH, arff_file);
+	 		while(tmptext2[0] == '%' && !feof(arff_file)) fgets(tmptext2, DESCRIPTION_LENGTH, arff_file); /* Skip comment lines */
+	 		if(!feof(arff_file)){
+		 	/*	printf("line=%s\n", tmptext2); */
+		 		token=strtok(tmptext2, delims); /* get first token (everything up to the first space) */
+		 		strcpy(tmptext, token);
+		 		token= strtok(NULL, delims); /* Get next token (gene family name) */
+		 		if(token!=NULL) strcpy(fam_name, token);
+		 	/*	printf("tmptext=%s fam_name=%s\n",tmptext, fam_name); */
 
-	 		token= strtok(NULL, delims); /* Get next token (gene family name) */
-	 		if(token!=NULL) strcpy(fam_name, token);
+		 		while(strcmp(tmptext, "@ATTRIBUTE") == 0 && !feof(arff_file)){
+		 			foundnode=is_genefam_in_tree(node_array[0], fam_name);  /* for each genefamily in the arff file, search the decision tree to see if it is there */
+		 			linenum++;
+		 			if(foundnode != -1){
+		 				node_array[foundnode]->arff_line_num=linenum-1; /* If the gene family is in the decision tree, then foundnode will be equal to the node number that contains the genefamily */
+		 			/*	printf("found attribute %s at node %d in decision tree! - linenum=%d\n", fam_name, foundnode, linenum-1); */
+		 				}
+					if(!feof(arff_file))fgets(tmptext2, DESCRIPTION_LENGTH, arff_file);
+					while(tmptext2[0] == '%' && !feof(arff_file)) fgets(tmptext2, DESCRIPTION_LENGTH, arff_file); /* Skip comment lines */
+					if(!feof(arff_file)){
+				 		token=strtok(tmptext2, delims); /* get first token (everything up to the first space) */
+				 		if(token!=NULL) strcpy(tmptext, token);
 
- 			}
+				 		token= strtok(NULL, delims); /* Get next token (gene family name) */
+				 		if(token!=NULL) strcpy(fam_name, token);
+				 		}
+		 			}
 
- 		printf("\tNum attributes found = %d\n", linenum-1);
- 		numfields=linenum-1; /* number of attributes (fields) in arff file */
- 		if(strcmp(tmptext2, "@DATA")==0){ /* start reading the data */
- 			linenum=0;
- 			
- 			genome_freq = malloc(numfields+1*sizeof(float)); /* this will hold the tokenised text for each data line */
+		 		printf("\tNum attributes found = %d\n", linenum-1);
+		 		numfields=linenum-1; /* number of attributes (fields) in arff file */
+		 		if(strcmp(tmptext2, "@DATA")==0){ /* start reading the data */
+		 			linenum=0;
+		 			
+		 			genome_freq = malloc(numfields+1*sizeof(float)); /* this will hold the tokenised text for each data line */
 
- 			while(!feof(arff_file)){
+		 			while(!feof(arff_file)){
 
- 				/* for each line of data, read in the numbers, tokenise them and then pass the array to add the data to the tree */
-				fgets(tmptext, DESCRIPTION_LENGTH, arff_file); /* read the line of data*/
- 				i=0;
- 				token=strtok(tmptext, delims2); /* get first token (everything up to the first comma) from the data line */
-				while(token != NULL ){
-					genome_freq[i]=atof(token); /* this assigns the values from the data lines to the array (converted to double/float) */
-					i++; 
-					token = strtok(NULL, delims2); /* Get next token (value) */
-					}	
+		 				/* for each line of data, read in the numbers, tokenise them and then pass the array to add the data to the tree */
+						fgets(tmptext, DESCRIPTION_LENGTH, arff_file); /* read the line of data*/
+						while(tmptext[0] == '%' && !feof(arff_file)) fgets(tmptext, DESCRIPTION_LENGTH, arff_file); /* Skip comment lines */
+		 				if(!feof(arff_file)){
+			 				i=0;
+			 				token=strtok(tmptext, delims2); /* get first token (everything up to the first comma) from the data line */
+							while(token != NULL ){
+								genome_freq[i]=atof(token); /* this assigns the values from the data lines to the array (converted to double/float) */
+								i++; 
+								token = strtok(NULL, delims2); /* Get next token (value) */
+								}	
 
-				/* this line represents one genome, the nodes on the decision tree represent one gene family in the dataset */
-				/* For each node we need to add the information of its frequency from this genome */
- 				for(i=0; i<nodecount; i++) /* for each node of the tree */
- 					{
- 					if(node_array[i]->arff_line_num >= 0){
- 						node_array[i]->freqs[linenum] = genome_freq[node_array[i]->arff_line_num]; 	
- 						}else{
- 						node_array[i]->freqs[linenum] = 0;  /* if the gene family is not arff file, then set the frequency to zero */
- 						}				
- 					}
+							/* this line represents one genome, the nodes on the decision tree represent one gene family in the dataset */
+							/* For each node we need to add the information of its frequency from this genome */
+			 				for(i=0; i<nodecount; i++) /* for each node of the tree */
+			 					{
+			 					if(node_array[i]->arff_line_num >= 0){
+			 						node_array[i]->freqs[linenum] = genome_freq[node_array[i]->arff_line_num]; 	
+			 						}else{
+			 						node_array[i]->freqs[linenum] = 0;  /* if the gene family is not arff file, then set the frequency to zero */
+			 						}				
+			 					}
 
- 				linenum++;
- 				} /* end while */
- 			num_genomes=linenum;
- 			printf("\tnumber of genomes = %d\n", num_genomes);
- 			}	
-	 	}	
+			 				linenum++;
+			 				}
+		 				} /* end while */
+		 			num_genomes=linenum;
+		 			printf("\tnumber of genomes = %d\n", num_genomes);
+		 			}	
+			 	}
+			}	
+		}
 	 free(fam_name);
 	}
 
