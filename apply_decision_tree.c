@@ -57,6 +57,7 @@ struct node {
 
 struct node **node_array = NULL;
 int numfields=0, nodecount=0, edgecount=0, num_genomes=0; 
+char **genome_names=NULL;
 
 
 
@@ -272,14 +273,20 @@ void read_tree (FILE * treefile)
 void read_arff (FILE * arff_file)
 	{
 	char tmptext[DESCRIPTION_LENGTH], tmptext2[DESCRIPTION_LENGTH], *fam_name=NULL, c;
-	int num=0, l;
-	int foundnode=-1, linenum=0, i;
+	int num=0, l, i;
+	int foundnode=-1, linenum=0;
 	const char delims[3] = " \n";
 	const char delims2[3] = ",\n";
     char *token;
     float *genome_freq = NULL;
 
 
+    genome_names=malloc(DESCRIPTION_LENGTH*sizeof(char*));
+    for(i=0; i<DESCRIPTION_LENGTH; i++)
+    	{
+    	genome_names[i]=malloc(1000*sizeof(char));
+    	genome_names[i][0] = '\0';
+    	}
 
 	fam_name=malloc(DESCRIPTION_LENGTH*sizeof(char));
 	fam_name[0]='\0';
@@ -341,8 +348,10 @@ void read_arff (FILE * arff_file)
 			 				token=strtok(tmptext, delims2); /* get first token (everything up to the first comma) from the data line */
 							while(token != NULL ){
 								genome_freq[i]=atof(token); /* this assigns the values from the data lines to the array (converted to double/float) */
+								strcpy(genome_names[linenum], token);
 								i++; 
 								token = strtok(NULL, delims2); /* Get next token (value) */
+
 								}	
 
 							/* this line represents one genome, the nodes on the decision tree represent one gene family in the dataset */
