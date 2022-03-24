@@ -17,7 +17,7 @@
 
 /****** Define  ********/
 
-#define DESCRIPTION_LENGTH 1000000
+#define DESCRIPTION_LENGTH 100000
 
 #ifndef TRUE
 #define TRUE 1
@@ -459,6 +459,9 @@ void asses_genomes(struct node *position, int genome)
 										if(position->freqs[genome] == position->right_value)
 											asses_genomes(position->right, genome);
 										}
+									else{
+										printf("ERROR:Unable to process genome %d through decision tree\n", genome);
+										}
 								}
 						}
 				}	
@@ -484,12 +487,12 @@ void print_tree_traversal_counts(struct node *position)
 
 void print_newick_treefile(struct node *position, FILE *newickfile)
 	{
-	char *newlabel;
+	char *newlabel, tmpstring[DESCRIPTION_LENGTH];
 	int i;
 	
 	newlabel=malloc(DESCRIPTION_LENGTH*sizeof(char));
 	newlabel[0]='\0';
-
+	tmpstring[0] = '\0';
 
 	/* get rid of parentheses in labels as they will conflict with the newick format */
 	for(i=0; i<DESCRIPTION_LENGTH; i++){
@@ -516,15 +519,22 @@ void print_newick_treefile(struct node *position, FILE *newickfile)
 	 	print_newick_treefile(position->left, newickfile);
 	 	fprintf(newickfile, ",");
 		}
+	if(position->parent != NULL)  /* Go up one level in the tree to get the condition which results in a genome coming to this node */
+		{	
+		if(position->parent->right == position)
+			sprintf(tmpstring, "%s%f", position->parent->right_condition, position->parent->right_value);
+		else
+			sprintf(tmpstring, "%s%f", position->parent->left_condition, position->parent->left_value);
+		}
 
 	if(position->right != NULL) 
 		{
 		print_newick_treefile(position->right, newickfile);
-		fprintf(newickfile, ")N%d-%s-%d", position->name, newlabel, position->traversal_count);
+		fprintf(newickfile, ")Prev%s-N%d-%s-%d",tmpstring, position->name, newlabel, position->traversal_count);
 		}
 	if(position->left == NULL && position->right == NULL)
 		{	
-		fprintf(newickfile, "N%d-%s-%d", position->name, newlabel, position->traversal_count);
+		fprintf(newickfile, "Prev%s-N%d-%s-%d",tmpstring, position->name, newlabel, position->traversal_count);
 		}
 
 	free(newlabel);
