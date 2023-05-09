@@ -16,3 +16,11 @@ apply_decision_tree
 eggnog.edited.arff
 eggnog.edited.arff.result
 apply_decision_tree
+apply_decision_tree 2
+test-data/Ampicillin_index.csv
+test-data/Ampicillin_index.csv.paths.txt
+test-data/Ampicillin_index.csv.predicitions.txt
+test-data/ampicillin_RGI_ALL_new.arff
+test-data/ampicillin_RGI_ALL_new.arff.dot
+test-data/formatted_tree_file.txt
+test-data/newick_output.txt

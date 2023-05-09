@@ -57,7 +57,8 @@ struct node {
 
 struct node **node_array = NULL;
 int numfields=0, nodecount=0, edgecount=0, num_genomes=0; 
-char **genome_names=NULL;
+char **genome_names=NULL, **genomes=NULL;
+FILE *outfile = NULL, *path_outfile = NULL;
 
 
 
@@ -67,10 +68,12 @@ char **genome_names=NULL;
 void print_tree_details(struct node *position);
 void read_tree (FILE * treefile);
 void read_arff (FILE * arff_file); 
+void read_genome_names (FILE * genome_names_file);
 int is_genefam_in_tree(struct node *position, char *famname);
 void asses_genomes(struct node *position, int genome);
 void print_tree_traversal_counts(struct node *position);
 void print_newick_treefile(struct node *position, FILE *newickfile);
+void print_tree_paths(struct node *position, char *path);
 
 
 
@@ -78,9 +81,20 @@ void print_newick_treefile(struct node *position, FILE *newickfile);
 	
  int main(int argc, char const *argv[]){
 
-	 FILE *treefile = NULL, *arff_file = NULL, *newickfile = NULL;
+	 FILE *treefile = NULL, *arff_file = NULL, *newickfile = NULL, *genomenamefile = NULL;
 	 int i;
-	 char command[10000] = "grep \"^N[0-9]\" ";
+	 char command[10000] = "grep \"^N[0-9]\" ", path[1000000], outfile_name[10000], pathoutfile_name[10000];
+
+	 path[0] = '\0'; outfile_name[0] = '\0', pathoutfile_name[0] = '\0';
+
+	 if(argc < 4)
+	 	{	
+	 	printf("apply_decision_tree\n\n\tUsage:\n\tapply_decision_tree <DOT-formmated tree file> <ARFF-formmated data file> <genome-names-file>\n\n");
+	 	printf("Output predictions for all genomes will be written to a file called <genome-names-file>.predictions.txt\n" );
+	 	printf("All paths though the decision tree will be written to a file called <genome-names-file>.paths.txt\n\n" );
+	 	exit(0);
+	 	}
+
 	 strcat(command, argv[1]);
 	 strcat(command, " | sed 's/\\[label=\"//g' | sed 's/\" *\\]//g'| sed 's/\\\".*\\]$//g' | sed \"s/\\(N[0-9]*\\) /\\1	/g\" | sed '/->/s/^/EDGE	/g' | sed '/^N[0-9]/s/^/NODE	/g' | awk '{print $1\"\t\"$2\"\t\"$3\"\t\"$4\"#\"}' > formatted_tree_file.txt");
  	/* code */
@@ -99,15 +113,24 @@ void print_newick_treefile(struct node *position, FILE *newickfile);
 	read_arff (arff_file); /* read the arff_file and build the decisiontree in memory */
  	fclose(arff_file);
 
+    /* STEP 2.5 Read in the genome_names file */
+ 	genomenamefile = fopen(argv[3], "r");
+
+ 	sprintf(outfile_name, "%s.predicitions.txt", argv[3]);
+ 	outfile = fopen(outfile_name, "w");
+
+ 	printf("Starting to read genome name file\n");
+ 	read_genome_names (genomenamefile);
+ 	fclose(genomenamefile);
 
  	/* STEP 3: assess all the genome information based on the decision tree */
- 	printf("RESULTS:\n");
-
+ 	printf("Printing Genome predicitons to %s\n", outfile_name);
+ 	fprintf(outfile, "Genome_name\tGenome_number\tNode_number\tNode_label\n");
  	for(i=0; i<num_genomes; i++)
  		{
  		asses_genomes(node_array[0], i);
  		}
-
+ 	fclose(outfile);
  	/* STEP 4: print out node traversal counts across the tree for from the genome assessments */
  	printf("\nDecision Tree traversal counts:\n");
  	print_tree_traversal_counts(node_array[0]);
@@ -120,6 +143,16 @@ void print_newick_treefile(struct node *position, FILE *newickfile);
  	fprintf(newickfile, ");\n");
  	fclose(newickfile);
  	printf("\tNewick tree written to file newick_output.txt\n");
+
+
+ 	/* STEP 6 print all paths through trees (iE the paths to resistance) */
+
+ 	sprintf(pathoutfile_name, "%s.paths.txt", argv[3]);
+ 	printf("Printing paths through Decision trees to %s\n", pathoutfile_name);
+ 	path_outfile = fopen(pathoutfile_name, "w");
+
+ 	fprintf(path_outfile, "Path_terminal_node\tLabel\tTime_traversed\tPath\n");
+ 	print_tree_paths(node_array[0], path);
 
  		/* test that the tree and data was read in correctly */
 /* 	printf("Starting Tree traversal\n"); */
@@ -471,7 +504,7 @@ void asses_genomes(struct node *position, int genome)
 
 	if(position->left == NULL && position->right == NULL)
 		{	
-		printf("Genome %d = Node:%d Label:%s\n", genome, position->name, position->label);
+		fprintf(outfile, "%s\t%d\t%d\t%s\n", genomes[genome], genome, position->name, position->label);
 		}
 
 	}
@@ -481,6 +514,31 @@ void print_tree_traversal_counts(struct node *position)
 		printf("Node number %d\tLabel:%s\tVisit Count:%d\n", position->name, position->label, position->traversal_count);
 		if(position->left != NULL) print_tree_traversal_counts(position->left);
 		if(position->right != NULL) print_tree_traversal_counts(position->right);
+	}
+
+
+/* This traverses the tree to identify all terminal paths - IE the paths to resistance */
+void print_tree_paths(struct node *position, char *path)
+	{
+		char left_path[100000], right_path[100000];	
+
+		left_path[0] = '\0'; right_path[0]= '\0';
+
+		if(position->left != NULL) 
+			{
+				sprintf(left_path, "%s; %s %s %f", path, position->label, position->left_condition, position->left_value);
+				print_tree_paths(position->left, left_path);
+
+			}
+		if(position->right != NULL)
+			{
+				sprintf(right_path, "%s; %s %s %f", path, position->label, position->right_condition, position->right_value );
+				print_tree_paths(position->right, right_path);
+			}
+		if(position->right == NULL && position->left == NULL) {
+			/*printf("Node number %d\tLabel:%s\tVisit Count:%d\n", position->name, position->label, position->traversal_count);*/
+			fprintf(path_outfile,"%d\t%s\t%d\t%s\n", position->name, position->label, position->traversal_count, path);
+		}
 	}
 
 
@@ -541,3 +599,19 @@ void print_newick_treefile(struct node *position, FILE *newickfile)
 
 	}
 
+void read_genome_names (FILE * genome_names_file)
+	{
+	int i;
+	i=0;
+	genomes=malloc(num_genomes*sizeof(char*));
+	for(i=0; i<num_genomes; i++)
+		{
+		genomes[i]=malloc(1000*sizeof(char));
+		genomes[i][0] = '\0';
+		}
+	i=0;
+	while(!feof(genome_names_file)){
+		fscanf(genome_names_file, "%s\n", genomes[i]);
+		i++; 
+		}
+	}
