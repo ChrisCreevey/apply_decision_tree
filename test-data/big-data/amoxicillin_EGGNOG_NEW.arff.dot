@@ -1,0 +1,16 @@
+digraph J48Tree {
+N0 [label="GeneFamily-2DIV7" ]
+N0->N1 [label="<= 0"]
+N1 [label="Resistant (9.0)" shape=box style=filled ]
+N0->N2 [label="> 0"]
+N2 [label="GeneFamily-28U2V" ]
+N2->N3 [label="<= 0"]
+N3 [label="Susceptible (138.0/1.0)" shape=box style=filled ]
+N2->N4 [label="> 0"]
+N4 [label="GeneFamily-28JQW" ]
+N4->N5 [label="<= 0"]
+N5 [label="Resistant (2.0)" shape=box style=filled ]
+N4->N6 [label="> 0"]
+N6 [label="Susceptible (6.0)" shape=box style=filled ]
+}
+

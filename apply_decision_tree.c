@@ -603,6 +603,7 @@ void read_genome_names (FILE * genome_names_file)
 	{
 	int i;
 	i=0;
+
 	genomes=malloc(num_genomes*sizeof(char*));
 	for(i=0; i<num_genomes; i++)
 		{
@@ -611,7 +612,12 @@ void read_genome_names (FILE * genome_names_file)
 		}
 	i=0;
 	while(!feof(genome_names_file)){
-		fscanf(genome_names_file, "%s\n", genomes[i]);
+		if(i >= num_genomes) {
+			printf("WARNING! The number of names in the genome names file doesn;t match the number of genomes lines in the arff file!\n");
+			}
+		else{
+			fscanf(genome_names_file, "%s\n", genomes[i]);
+			}
 		i++; 
 		}
 	}

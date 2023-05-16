@@ -1,0 +1,1 @@
+((Prev<=0.000000-N1-Resistant {9.0}#-9,(Prev<=0.000000-N3-Susceptible {138.0/1.0}#-138,(Prev<=0.000000-N5-Resistant {2.0}#-2,Prev>0.000000-N6-Susceptible {6.0}#-6)Prev>0.000000-N4-GeneFamily-28JQW-8)Prev>0.000000-N2-GeneFamily-28U2V-146)Prev-N0-GeneFamily-2DIV7-155);
