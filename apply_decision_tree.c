@@ -135,11 +135,11 @@ void print_gene_contib_phenos(void);
 	 	fclose(genomenamefile);
 	 }
 
- 	sprintf(outfile_name, "%s.predicitions.txt", file_stem);
+ 	sprintf(outfile_name, "%s.predictions.txt", file_stem);
  	outfile = fopen(outfile_name, "w");
 
  	/* STEP 3: assess all the genome information based on the decision tree */
- 	printf("Printing Genome predicitons to %s\n", outfile_name);
+ 	printf("Printing Genome predictions to %s\n", outfile_name);
  	fprintf(outfile, "Genome_name\tGenome_number\tNode_number\tNode_label\n");
  	for(i=0; i<num_genomes; i++)
  		{
@@ -791,10 +791,10 @@ void count_all_phenos_neg(struct node *position, int gene_num)
 	{
 	int i=0;
 	if(position->right != NULL) 
-		count_all_phenos_pos(position->right, gene_num);
+		count_all_phenos_neg(position->right, gene_num);
 		
 	if(position->left != NULL)
-		count_all_phenos_pos(position->left, gene_num);
+		count_all_phenos_neg(position->left, gene_num);
 
 	if(position->left == NULL && position->right == NULL){
 		i=0;
